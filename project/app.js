@@ -8,32 +8,23 @@ client.set('headers', { // 크롤링 방지 우회를 위한 User-Agent setting
 }); 
 var express = require('express');
 const request = require('request');
-<<<<<<< HEAD
 
 const cheerio = require('cheerio');//크롤링 module
 const xlsx = require("xlsx");//엑셀 파싱 module
 const puppeteer = require('puppeteer');
-const TARGET_URL = 'https://api.line.me/v2/bot/message/reply';
-//merge하기전 토큰과 도메인 수정할것!!
-const TOKEN = 'r/qgCfP0wwGegeaGmAvPTztE0nCDg5t35IUJap+U2i0Kvm0DMMjxdiAPQ/Pg+zAqaJrMh8c1Oj/QtGZTBOwgKLmQrT3xkAyCA26ipxYPmMwbjg7C6JhxeGI7TEyBXDP2qKmACxledtL8zzqRMOlLvAdB04t89/1O/w1cDnyilFU=';
-=======
 const TARGET_URL = 'https://api.line.me/v2/bot/message/reply'
 const MAP_URL = 'https://dapi.kakao.com/v2/local/search/keyword.json'
-const TOKEN = 'r/qgCfP0wwGegeaGmAvPTztE0nCDg5t35IUJap+U2i0Kvm0DMMjxdiAPQ/Pg+zAqaJrMh8c1Oj/QtGZTBOwgKLmQrT3xkAyCA26ipxYPmMwbjg7C6JhxeGI7TEyBXDP2qKmACxledtL8zzqRMOlLvAdB04t89/1O/w1cDnyilFU=';
+const TOKEN = 'kZcWJ5n53KJ9b/QJWFyAYz4xYX278PTqU3+UsLhSTFyrDp11WfzMKXXFTpefwdRrBcQz6hPr7wexoaVjbEbqrjyfIjMsocuFKGsYZTiWG0OdLwyZ4BfP785umJOeZod3lqyljmErg4/edTIOo9aHqAdB04t89/1O/w1cDnyilFU=';
 const KAKAO_ID = 'fb1345dd38817291d1f9105a21488b17';
->>>>>>> origin/develop
 const fs = require('fs');
 const path = require('path');
 const HTTPS = require('https');
-const domain = "www.osschatbotassignment.ml";
+const domain = "www.osstest1105.ml";
 const sslport = 23023;
 const bodyParser = require('body-parser');
-<<<<<<< HEAD
 const router = express.Router();
 var resultmessage = "";
-=======
 const { info } = require('console');
->>>>>>> origin/develop
 var app = express();
 app.use(bodyParser.json());
 
@@ -51,14 +42,30 @@ app.post('/hook', function (req, res) {
     console.log('[request]', req.body);
     console.log('[request source] ', eventObj.source);
     console.log('[request message]', eventObj.message);
-<<<<<<< HEAD
-    if (eventObj.message.text.indexOf("장소")!=-1){//"_구" 확진자 방문 "장소"
+
+    if (eventObj.message.text.indexOf("장소")!=-1){//2. "_구" 확진자 방문 "장소"
         places(eventObj.replyToken, eventObj.message);
     }
-    else if (eventObj.message.text.indexOf("거리두기")!=-1){//사회적 "거리두기" "_단계" (1, 1.5, 2, 2.5, 3)
+    else if(message.text.indexOf("오늘") !== -1 || message.text.indexOf("확진자") !== -1 || message.text.indexOf("명")!==-1){ 
+      //1. 오늘의 서울시 총 확진자
+      today_all(eventObj.replyToken);
+    }
+
+    else if(all_gu.indexOf(message.text) !== -1){ //1-1. 오늘의 서울시 __구 확진자 수
+      today_gu(eventObj.replyToken, eventObj.message.text);
+    }
+
+    else if(message.text.indexOf("선별진료소") !== -1 || message.text.indexOf("선별 진료소") !== -1){
+      // 3. __구 선별진료소
+      hospital_information(eventObj.replyToken, eventObj.message.text);
+    }
+    else if (eventObj.message.text.indexOf("거리두기")!=-1){//4. 사회적 "거리두기" "_단계" (1, 1.5, 2, 2.5, 3)
         steps(eventObj.replyToken, eventObj.message);
     }
-    
+    else{ //매뉴얼 이외의 입력은 모두 도움말 출력
+      information(eventObj.replyToken);
+    }
+
     res.sendStatus(200);
 });
 
@@ -86,8 +93,9 @@ app.post('/hook', function (req, res) {
             var cnt = 0;
             var ttr_lists = $("#DataTables_Table_0").children("tbody").children("tr");
             for (var t = 0; t<ttr_lists.length; t++){
-                var tr_lists = ttr_lists.eq(t).children("td").children("table").children("tbody").children("tr");
-                        
+                //#DataTables_Table_0 > tbody > tr:nth-child(3) > td > div > table
+                //#DataTables_Table_0 > tbody > tr:nth-child(2) > td > div > table > tbody
+                var tr_lists = ttr_lists.eq(t).children("td").children("div").children("table").children("tbody").children("tr");
                 scrapingResult = {//결과 나타낼 형식
                         'district': '',
                         'type': '',
@@ -98,7 +106,7 @@ app.post('/hook', function (req, res) {
                     }
                 for (var row = 0; row<tr_lists.length; row++){
                     scrapingResult['district'] = String(tr_lists.eq(row).find('td:nth-child(1)').text());
-                    if (scrapingResult['district']!==my) continue;//구역이 내 구역인 경우만
+                    if (scrapingResult['district']!=my) continue;//구역이 내 구역인 경우만
                     scrapingResult['type'] = String(tr_lists.eq(row).find('td:nth-child(2)').text());
                     if (scrapingResult['type']=="자택") continue;//자택 장소 필요X
                     scrapingResult['business_name'] = String(tr_lists.eq(row).find('td:nth-child(3)').text());
@@ -121,28 +129,35 @@ app.post('/hook', function (req, res) {
                 }
                 if (cnt==10) break;
                 
+            }            if (cnt==0){
+            resultmessage+="확진자 방문 장소가 없습니다.\n\n";
             }
-=======
+            resultmessage+="「확진환자의 이동경로 등 정보공개 지침(1판)」에 따라 확진환자의 성별, 연령, 국적, 거주지(읍면동 단위 이하) 등 개인을 특정하는 정보는 공개되지 않습니다.\n"
+            browser.close();
+                
+            request.post(
+                {
+                    url: TARGET_URL,
+                    headers: {
+                        'Authorization': `Bearer ${TOKEN}`
+                    },
+                    json: {
+                        "replyToken":replyToken,
+                        "messages":[
+                            {
+                                "type":"text",
+                                "text":resultmessage
+                            }
+                        ]
+                    }
+                },(error, response, body) => {
+                    console.log(body);
+                });
+        })();
 
-    if(message.text.indexOf("오늘") !== -1 || message.text.indexOf("확진자") !== -1 || message.text.indexOf("명")!==-1){ 
-      //1. 오늘의 서울시 총 확진자
-      today_all(eventObj.replyToken);
-    }
-    else if(all_gu.indexOf(message.text) !== -1){ //1-1 오늘의 서울시 __구 확진자 수
-      today_gu(eventObj.replyToken, eventObj.message.text);
-    }
-    else if(message.text.indexOf("선별진료소") !== -1 || message.text.indexOf("선별 진료소") !== -1){
-      // 3. __구 선별진료소
-      hospital_information(eventObj.replyToken, eventObj.message.text);
-    }
-    else{ //매뉴얼 이외의 입력은 모두 도움말 출력
-      information(eventObj.replyToken);
     }
 
 
-
-    res.sendStatus(200);
-});
 
 function today_all(replyToken){ //오늘의 서울시 총 확진자
 
@@ -344,35 +359,6 @@ function information(replyToken){ //서울시 코로나 정보봇 사용 매뉴�
     });
 
 }
->>>>>>> origin/develop
-
-            if (cnt==0){
-            resultmessage+="확진자 방문 장소가 없습니다.\n\n";
-            }
-            resultmessage+="*「확진환자의 이동경로 등 정보공개 지침(1판)」에 따라 확진환자의 성별, 연령, 국적, 거주지(읍면동 단위 이하) 등 개인을 특정하는 정보는 공개되지 않습니다.*\n"
-            browser.close();
-                
-            request.post(
-                {
-                    url: TARGET_URL,
-                    headers: {
-                        'Authorization': `Bearer ${TOKEN}`
-                    },
-                    json: {
-                        "replyToken":replyToken,
-                        "messages":[
-                            {
-                                "type":"text",
-                                "text":resultmessage
-                            }
-                        ]
-                    }
-                },(error, response, body) => {
-                    console.log(body);
-                });
-        })();
-
-    }
     function steps(replyToken, message){
         console.log("steps");
         const workbook = xlsx.readFile("stepexcel.xlsx");//거리두기 정보 담긴 엑셀 읽기
