@@ -1,14 +1,15 @@
 var express = require('express');
 const request = require('request');
-const cheerio = require('cheerio');
-const xlsx = require("xlsx");
+const cheerio = require('cheerio');//크롤링 module
+const xlsx = require("xlsx");//엑셀 파싱 module
 const puppeteer = require('puppeteer');
 const TARGET_URL = 'https://api.line.me/v2/bot/message/reply';
-const TOKEN = 'kZcWJ5n53KJ9b/QJWFyAYz4xYX278PTqU3+UsLhSTFyrDp11WfzMKXXFTpefwdRrBcQz6hPr7wexoaVjbEbqrjyfIjMsocuFKGsYZTiWG0OdLwyZ4BfP785umJOeZod3lqyljmErg4/edTIOo9aHqAdB04t89/1O/w1cDnyilFU=';
+//merge하기전 토큰과 도메인 수정할것!!
+const TOKEN = 'r/qgCfP0wwGegeaGmAvPTztE0nCDg5t35IUJap+U2i0Kvm0DMMjxdiAPQ/Pg+zAqaJrMh8c1Oj/QtGZTBOwgKLmQrT3xkAyCA26ipxYPmMwbjg7C6JhxeGI7TEyBXDP2qKmACxledtL8zzqRMOlLvAdB04t89/1O/w1cDnyilFU=';
 const fs = require('fs');
 const path = require('path');
 const HTTPS = require('https');
-const domain = "www.osstest1105.ml";
+const domain = "www.osschatbotassignment.ml";
 const sslport = 23023;
 const bodyParser = require('body-parser');
 const router = express.Router();
@@ -30,7 +31,7 @@ app.post('/hook', function (req, res) {
     if (eventObj.message.text.indexOf("장소")!=-1){//"_구" 확진자 방문 "장소"
         places(eventObj.replyToken, eventObj.message);
     }
-    else if (eventObj.message.text.indexOf("거리두기")!=-1){//사회적 "거리두기" "_단계"
+    else if (eventObj.message.text.indexOf("거리두기")!=-1){//사회적 "거리두기" "_단계" (1, 1.5, 2, 2.5, 3)
         steps(eventObj.replyToken, eventObj.message);
     }
     
@@ -49,7 +50,7 @@ app.post('/hook', function (req, res) {
             const content = await page.content();
             // $에 cheerio를 로드한다.
             const $ = cheerio.load(content);
-            var my= "";
+            var my= "";// 내 구
             var all_gu = ["종로구", "중구", "용산구", "성동구", "광진구", "동대문구", "중랑구", "성북구", "강북구", "도봉구", "노원구", "은평구", "서대문구", "마포구", "양천구", "강서구", "구로구", "금천구", "영등포구", "동작구", "관악구", "서초구", "강남구", "송파구", "강동구"];
             for (var i = 0; i<all_gu.length; i++){
                 if (message.text.indexOf(all_gu[i])!=-1){
@@ -63,7 +64,7 @@ app.post('/hook', function (req, res) {
             for (var t = 0; t<ttr_lists.length; t++){
                 var tr_lists = ttr_lists.eq(t).children("td").children("table").children("tbody").children("tr");
                         
-                scrapingResult = {
+                scrapingResult = {//결과 나타낼 형식
                         'district': '',
                         'type': '',
                         'business_name': '',
@@ -73,17 +74,17 @@ app.post('/hook', function (req, res) {
                     }
                 for (var row = 0; row<tr_lists.length; row++){
                     scrapingResult['district'] = String(tr_lists.eq(row).find('td:nth-child(1)').text());
-                    if (scrapingResult['district']!==my) continue;
+                    if (scrapingResult['district']!==my) continue;//구역이 내 구역인 경우만
                     scrapingResult['type'] = String(tr_lists.eq(row).find('td:nth-child(2)').text());
-                    if (scrapingResult['type']=="자택") continue;
+                    if (scrapingResult['type']=="자택") continue;//자택 장소 필요X
                     scrapingResult['business_name'] = String(tr_lists.eq(row).find('td:nth-child(3)').text());
-                    if (scrapingResult['business_name'].indexOf("비공개")!=-1) continue;
+                    if (scrapingResult['business_name'].indexOf("비공개")!=-1) continue;//다 처리되어서 비공개인 장소들 처리
                     if (scrapingResult['business_name'].indexOf("완료")!=-1) continue;
                     scrapingResult['address'] = String(tr_lists.eq(row).find('td:nth-child(4)').text());
                     if (scrapingResult['address'].indexOf("비공개")!=-1) continue;
                     scrapingResult['date_time'] = String(tr_lists.eq(row).find('td:nth-child(5)').text());
                     if (scrapingResult['date_time'].indexOf("비공개")!=-1) continue;
-                    if (scrapingResult['date_time'].indexOf("자가격리")!=-1) continue;
+                    if (scrapingResult['date_time'].indexOf("자가격리")!=-1) continue;//자가격리 환자 경로 처리
                     scrapingResult['disinfection'] = String(tr_lists.eq(row).find('td:nth-child(6)').text());
                     resultmessage+=scrapingResult['district']+" ";
                     resultmessage+=scrapingResult['type']+" ";
