@@ -28,8 +28,6 @@ app.post('/hook', function (req, res) {
     console.log('[request]', req.body);
     console.log('[request source] ', eventObj.source);
     console.log('[request message]', eventObj.message);
-
-<<<<<<< HEAD
     if (eventObj.message.text.indexOf("장소")!=-1){//"_구" 확진자 방문 "장소"
         places(eventObj.replyToken, eventObj.message);
     }
