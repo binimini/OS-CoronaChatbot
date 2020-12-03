@@ -1,5 +1,6 @@
 var express = require('express');
 const request = require('request');
+
 const cheerio = require('cheerio');//크롤링 module
 const xlsx = require("xlsx");//엑셀 파싱 module
 const puppeteer = require('puppeteer');
@@ -28,6 +29,7 @@ app.post('/hook', function (req, res) {
     console.log('[request source] ', eventObj.source);
     console.log('[request message]', eventObj.message);
 
+<<<<<<< HEAD
     if (eventObj.message.text.indexOf("장소")!=-1){//"_구" 확진자 방문 "장소"
         places(eventObj.replyToken, eventObj.message);
     }
@@ -234,4 +236,3 @@ app.post('/hook', function (req, res) {
         console.log(error);
     
     }
-    
