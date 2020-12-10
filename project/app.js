@@ -13,12 +13,12 @@ const xlsx = require("xlsx");//엑셀 파싱 module
 const puppeteer = require('puppeteer');
 const TARGET_URL = 'https://api.line.me/v2/bot/message/reply'
 const MAP_URL = 'https://dapi.kakao.com/v2/local/search/keyword.json'
-const TOKEN = 'r/qgCfP0wwGegeaGmAvPTztE0nCDg5t35IUJap+U2i0Kvm0DMMjxdiAPQ/Pg+zAqaJrMh8c1Oj/QtGZTBOwgKLmQrT3xkAyCA26ipxYPmMwbjg7C6JhxeGI7TEyBXDP2qKmACxledtL8zzqRMOlLvAdB04t89/1O/w1cDnyilFU=';
-const KAKAO_ID = 'fb1345dd38817291d1f9105a21488b17';
+const TOKEN = '';
+const KAKAO_ID = '';
 const fs = require('fs');
 const path = require('path');
 const HTTPS = require('https');
-const domain = "www.osschatbotassignment.ml";
+const domain = "";
 const sslport = 23023;
 const bodyParser = require('body-parser');
 const router = express.Router();
